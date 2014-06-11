@@ -11,7 +11,7 @@
       "type": "virtualbox-iso",
       "guest_os_type": "RedHat_64",
       "vboxmanage": [
-        ["modifyvm", "{{.Name}}", "--memory", "512"]
+        ["modifyvm", "{{.Name}}", "--memory", "1024"]
       ],
       "iso_url": "http://mirrors.kernel.org/centos/{{user `centos_version_major`}}/isos/x86_64/CentOS-{{user `centos_version_major`}}.{{user `centos_version_minor`}}-x86_64-bin-DVD1.iso",
       "iso_checksum": "{{user `centos_iso_checksum`}}",
@@ -22,7 +22,7 @@
       "boot_command": [
         "<tab> text ks=http://{{.HTTPIP}}:{{.HTTPPort}}/centos-{{user `centos_version_major`}}.cfg<enter>"
       ],
-      "ssh_wait_timeout": "10m",
+      "ssh_wait_timeout": "20m",
       "ssh_username": "root",
       "ssh_password": "vagrant",
       "shutdown_command": "shutdown -h now"
@@ -32,7 +32,7 @@
       "type": "virtualbox-iso",
       "guest_os_type": "Ubuntu_64",
       "vboxmanage": [
-        ["modifyvm", "{{.Name}}", "--memory", "512"]
+        ["modifyvm", "{{.Name}}", "--memory", "1024"]
       ],
       "iso_url": "http://releases.ubuntu.com/10.04.4/ubuntu-10.04.4-server-amd64.iso",
       "iso_checksum": "9b218654cdcdf9722171648c52f8a088",
@@ -61,7 +61,7 @@
         "preseed/url=http://{{.HTTPIP}}:{{.HTTPPort}}/ubuntu-10.04.cfg ",
         "--<enter>"
       ],
-      "ssh_wait_timeout": "10m",
+      "ssh_wait_timeout": "20m",
       "ssh_username": "root",
       "ssh_password": "vagrant",
       "shutdown_command": "shutdown -h now"
