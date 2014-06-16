@@ -32,7 +32,7 @@
     {
       "type": "chef-solo",
       "install_command": "wget -O - http://opscode.com/chef/install.sh | bash -s -- -v {{user `chef_version`}}",
-      "cookbook_paths": ["./cookbooks", "/Users/pivotal/.berkshelf/cookbooks"],
+      "cookbook_paths": ["./cookbooks"],
       "run_list": ["go_segment_base_box"]
     }
   ],

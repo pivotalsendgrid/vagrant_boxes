@@ -11,7 +11,7 @@
 # before server include.
 include_recipe 'sendgrid_mysql::development_headers'
 include_recipe 'sendgrid_mysql::server'
-# include_recipe 'db-schema::development'
+include_recipe 'db-schema::development'
 include_recipe 'sendgrid_elasticsearch::server'
 
 ## Install Go
