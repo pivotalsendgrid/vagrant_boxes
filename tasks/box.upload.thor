@@ -23,11 +23,17 @@ class Box < Thor
     # We sha1sum the imported disk (not the box itself) because it's the only
     # reasonable thing to compare against once a box is installed. This is used
     # by the tests at: https://github.com/sendgrid-ops/workstation_setup
-    vmdk_glob = File.join(Dir.home, '.vagrant.d', 'boxes', File.basename(box, '.box'), '0', 'virtualbox', '*.vmdk')
-    sha_path = Dir[vmdk_glob].first
+    vmdk_glob_1 = File.join(Dir.home, '.vagrant.d', 'boxes', File.basename(box, '.box'), 'virtualbox', '*.vmdk')
+    vmdk_glob_2 = File.join(Dir.home, '.vagrant.d', 'boxes', File.basename(box, '.box'), '0', 'virtualbox', '*.vmdk')
+    sha_path_1 = Dir[vmdk_glob_1].first
+    sha_path_2 = Dir[vmdk_glob_2].first
 
-    if sha_path
-      sha = Digest::SHA1.hexdigest(IO.read(sha_path))
+    if sha_path_1
+      sha = Digest::SHA1.hexdigest(IO.read(sha_path_1))
+      run "echo '#{sha}' > #{box}.sha1"
+      run "rsync -avz --progress #{box} #{box}.sha1 #{options[:repository]}"
+    elsif sha_path_2
+      sha = Digest::SHA1.hexdigest(IO.read(sha_path_2))
       run "echo '#{sha}' > #{box}.sha1"
       run "rsync -avz --progress #{box} #{box}.sha1 #{options[:repository]}"
     else
