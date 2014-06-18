@@ -1,0 +1,25 @@
+{
+  "variables": {
+    "centos_version_major": "6",
+    "centos_version_minor": "5",
+    "centos_iso_checksum": "83221db52687c7b857e65bfe60787838",
+    "chef_version": null
+  },
+  "builders": [
+      {
+          "type": "virtualbox-ovf",
+          "source_path": "./vms/go_segment_centos_6.ovf",
+          "ssh_username": "vagrant",
+          "ssh_password": "vagrant",
+          "ssh_wait_timeout": "60s",
+          "shutdown_command": "echo 'packer' | sudo -S shutdown -P now"
+      }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "vagrantfile_template": "Vagrantfile.template",
+      "output": "sendgrid_{{.BuildName}}_chef-{{user `chef_version`}}.box"
+    }
+  ]
+}

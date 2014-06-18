@@ -1,0 +1,83 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require 'vagrant'
+require 'yaml'
+
+if Vagrant::VERSION < '1.2.1'
+  raise 'This is only compatible with Vagrant 1.2.1+'
+end
+
+# Figure out project specific settings for items
+python_version = File.exist?('.python-version') ? File.read('.python-version') : '2.6.5'
+chef_environment, chef_environments_path = if File.exist?('./.chef-environment')
+                                             puts 'Using local .chef-environment'
+                                             [File.read('./.chef-environment').strip, '/tmp/environments']
+                                           elsif File.exist?('~/.chef-environment')
+                                             puts 'Using global .chef-environment'
+                                             [File.read('~/.chef-environment').strip, '/tmp/environments']
+                                           end
+
+# *** If you want to pull in newer upstream packages, dump them in ci-repo in
+# this repos folder and the package manager will be able to see them.
+# NOTE You may still need to update dependencies to grab newer versions
+ci_repo_dir = File.exist?('ci-repo') ? File.expand_path('ci-repo') : nil
+
+Vagrant.configure("2") do |config|
+
+  config.vm.hostname = "go-segment-base"
+
+  # Setup go-segment-base using Berkshelf, starting from a SendGrid centos box
+  config.vm.define 'go-segment-base', :primary => true do | c |
+    c.berkshelf.berksfile_path = './Berksfile'
+    c.vm.box = 'sendgrid_centos-6.5_chef-11.12.4'
+    c.vm.box_url = 'http://repo.sjc1.sendgrid.net/images/vagrant/sendgrid_centos-6.5_chef-11.12.4.box'
+  end
+
+  config.vm.provider :virtualbox do |vb|
+    # Give enough horsepower to build without taking all day.
+    vb.customize [
+                     'modifyvm', :id,
+                     '--memory', '2048',
+                     '--cpus', '2'
+                 ]
+  end
+
+  # Ensure a recent version of the Chef Omnibus packages are installed
+  # *** Enable if omnibus is used for packaging ***
+  #  config.omnibus.chef_version = :latest
+
+  # Enable the berkshelf-vagrant plugin
+  config.berkshelf.enabled = true
+  config.berkshelf.berksfile_path = './Berksfile'
+
+  config.ssh.forward_agent = true
+
+  if ci_repo_dir
+    puts 'Found ci-repo, linking for configuration'
+    config.vm.synced_folder ci_repo_dir, '/tmp/ci-repo'
+  end
+
+  # Setup base go-segment configuration with Chef
+  config.vm.provision :chef_solo do |chef|
+    if chef_environment
+      puts "Provisioning with environment: #{chef_environment} (path: #{chef_environments_path})"
+      chef.environments_path = chef_environments_path
+      chef.environment = chef_environment
+    end
+
+    chef.cookbooks_path = 'cookbooks'
+    chef.add_recipe 'ci_dependencies::default'
+    chef.add_recipe 'ci_dependencies::test'
+
+    chef.json = {
+        'python' => {
+            'version' => python_version
+        },
+        'go_segment' => {
+            'user' => 'vagrant',
+            'group' => 'vagrant'
+        }
+    }
+  end
+end

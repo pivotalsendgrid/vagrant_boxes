@@ -23,7 +23,9 @@ class Box < Thor
     # We sha1sum the imported disk (not the box itself) because it's the only
     # reasonable thing to compare against once a box is installed. This is used
     # by the tests at: https://github.com/sendgrid-ops/workstation_setup
-    sha_path = Dir[File.join(Dir.home, '.vagrant.d', 'boxes', File.basename(box, '.box'), 'virtualbox', '*.vmdk')].first
+    vmdk_glob = File.join(Dir.home, '.vagrant.d', 'boxes', File.basename(box, '.box'), '0', 'virtualbox', '*.vmdk')
+    sha_path = Dir[vmdk_glob].first
+
     if sha_path
       sha = Digest::SHA1.hexdigest(IO.read(sha_path))
       run "echo '#{sha}' > #{box}.sha1"
